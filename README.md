@@ -38,6 +38,24 @@ failures alike):
 
 ![heal actions](docs/screenshots/07-actions.png)
 
+## Islanded-node wifi recovery
+
+`mesh-wifi-switch.sh` (mesh repo `scripts/`) switches a node to a target
+SSID with rescan-first, rollback, and receipts — locally or over SSH:
+
+```bash
+./scripts/mesh-wifi-switch.sh belkin2
+./scripts/mesh-wifi-switch.sh --remote owner@10.100.0.1 belkin2
+```
+
+Proven behavior: an islanded lighthouse (off-LAN, forward pointing at
+its dead interface) is **refused, not attempted** — no SSH path means no
+safe remote switch exists, and a blind attempt would strand it. Recovery
+is then hands-on at the node (or NM autoconnect when it roams back),
+after which the portal below shows both nodes green again:
+
+![steady state, both backends online](docs/screenshots/08-islanded-node.png)
+
 ## Interactive evaluation
 
 `tests/interactive-eval.py` runs real `google-chrome-stable` **headed**
