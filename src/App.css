@@ -1,0 +1,47 @@
+:root {
+  color-scheme: dark;
+}
+body {
+  font-family: system-ui, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  margin: 0;
+  padding: 16px;
+}
+.app {
+  max-width: 860px;
+  margin: 0 auto;
+}
+.banner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 12px 0;
+}
+.banner .onboard {
+  flex-basis: 100%;
+  color: #8b949e;
+  font-size: 13px;
+}
+.muted {
+  color: #8b949e;
+}
+code {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 12px;
+}
+ul {
+  padding-left: 20px;
+}
+li {
+  margin: 4px 0;
+  font-size: 14px;
+}
