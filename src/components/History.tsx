@@ -30,11 +30,14 @@ function dotColor(r: LatencyRow): string {
   return '#f85149';
 }
 
+import type { HealAction } from '../services/store';
+
 export function History(props: {
   latency: LatencyRow[];
   availability: Record<string, { checks: number; up_pct: number | null; avg_ms: number | null }>;
+  actions: HealAction[];
 }) {
-  const { latency, availability } = props;
+  const { latency, availability, actions } = props;
   if (latency.length === 0 && Object.keys(availability).length === 0) {
     return <p className="muted">No latency history yet — roam tests and monitors record here.</p>;
   }
@@ -56,6 +59,20 @@ export function History(props: {
           </li>
         ))}
       </ul>
+      {actions.length > 0 && (
+        <div>
+          <h3>Heal actions ({actions.length})</h3>
+          <ul>
+            {actions.slice(0, 10).map((a, i) => (
+              <li key={i}>
+                <span className="muted">{a.ts}</span> #{a.finding_id} {a.action} →{' '}
+                <strong>{a.result}</strong>
+                {a.note ? ` — ${a.note.slice(0, 100)}` : ''}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {Array.from(byNet.entries()).map(([net, rows]) => (
         <div key={net}>
           <h3>

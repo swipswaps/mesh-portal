@@ -61,6 +61,7 @@ export default function App() {
         <History
           latency={snapshot?.latency ?? []}
           availability={snapshot?.availability ?? {}}
+          actions={snapshot?.actions ?? []}
         />
         <Guide
           meshOnline={mesh.isAvailable}

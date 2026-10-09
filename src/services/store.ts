@@ -27,6 +27,14 @@ export interface LatencyRow {
   avg_ms: number | null;
 }
 
+export interface HealAction {
+  ts: string;
+  finding_id: number;
+  action: string;
+  result: string;
+  note: string;
+}
+
 export interface MeshSnapshot {
   available: boolean;
   nodes: MeshNode[];
@@ -35,6 +43,7 @@ export interface MeshSnapshot {
   counts: { devices?: number; reservations?: number; forwards?: number };
   latency: LatencyRow[];
   availability: Record<string, { checks: number; up_pct: number | null; avg_ms: number | null }>;
+  actions: HealAction[];
 }
 
 export async function readMesh(base: string): Promise<MeshSnapshot> {
@@ -49,6 +58,7 @@ export async function readMesh(base: string): Promise<MeshSnapshot> {
     counts: d.counts ?? {},
     latency: d.latency ?? [],
     availability: d.availability ?? {},
+    actions: d.actions ?? [],
   };
 }
 

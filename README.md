@@ -33,6 +33,11 @@ network, loss-colored dots) + guided fixes with click-to-copy commands:
 
 ![telemetry, history, guided fixes](docs/screenshots/06-history.png)
 
+Heal actions audit trail (every close-loop attempt logged, successes and
+failures alike):
+
+![heal actions](docs/screenshots/07-actions.png)
+
 ## Interactive evaluation
 
 `tests/interactive-eval.py` runs real `google-chrome-stable` **headed**
