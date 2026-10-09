@@ -18,12 +18,23 @@ export interface MeshFinding {
   detail: string;
 }
 
+export interface LatencyRow {
+  ts: string;
+  network: string;
+  target: string;
+  sent: number;
+  recv: number;
+  avg_ms: number | null;
+}
+
 export interface MeshSnapshot {
   available: boolean;
   nodes: MeshNode[];
   peers: Array<{ mesh_ip: string }>;
   findings: MeshFinding[];
   counts: { devices?: number; reservations?: number; forwards?: number };
+  latency: LatencyRow[];
+  availability: Record<string, { checks: number; up_pct: number | null; avg_ms: number | null }>;
 }
 
 export async function readMesh(base: string): Promise<MeshSnapshot> {
@@ -36,6 +47,8 @@ export async function readMesh(base: string): Promise<MeshSnapshot> {
     peers: d.peers ?? [],
     findings: d.findings ?? [],
     counts: d.counts ?? {},
+    latency: d.latency ?? [],
+    availability: d.availability ?? {},
   };
 }
 

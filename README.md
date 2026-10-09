@@ -28,6 +28,11 @@ Private-Network headers all verified end to end:
 
 ![pages origin, backends up](docs/screenshots/eval-01-pages-offline.png)
 
+Database-driven telemetry + availability history (sparklines per
+network, loss-colored dots) + guided fixes with click-to-copy commands:
+
+![telemetry, history, guided fixes](docs/screenshots/06-history.png)
+
 ## Interactive evaluation
 
 `tests/interactive-eval.py` runs real `google-chrome-stable` **headed**

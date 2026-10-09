@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { MESH_API_BASE, OPENCODE_BASE } from '../config';
-import { readMesh, readSessions, type MeshSnapshot } from '../services/store';
-
+import { readMesh, readSessions } from '../services/store';
+import type { MeshSnapshot } from '../services/store';
 /**
  * Database-driven telemetry: mesh inventory rows + session counts,
  * refreshed on mount and every 60s. Degrades per-source (one backend
@@ -11,6 +11,7 @@ export function Telemetry(props: {
   meshOnline: boolean;
   dashboardOnline: boolean;
   onCounts(n: { nodes: number; findings: number; sessions: number | null }): void;
+  onSnapshot(m: MeshSnapshot | null): void;
 }) {
   const [mesh, setMesh] = useState<MeshSnapshot | null>(null);
   const [sessions, setSessions] = useState<number | null>(null);
@@ -26,14 +27,19 @@ export function Telemetry(props: {
           const m = await readMesh(MESH_API_BASE);
           if (!cancelled) {
             setMesh(m);
+            props.onSnapshot(m);
             nodes = m.nodes.length;
             findings = m.findings.length;
           }
         } catch {
-          if (!cancelled) setMesh(null);
+          if (!cancelled) {
+            setMesh(null);
+            props.onSnapshot(null);
+          }
         }
       } else {
         setMesh(null);
+        props.onSnapshot(null);
       }
       if (props.dashboardOnline) {
         try {
