@@ -31,11 +31,18 @@ Private-Network headers all verified end to end:
 ## Interactive evaluation
 
 `tests/interactive-eval.py` runs real `google-chrome-stable` **headed**
-(slow motion, watch on `:0`), three steps (Pages → dashboard direct →
-local preview), and reports per-step timings, console errors, pageerrors,
-plus backend probes classified into blockers (`CERT-AUTHORITY`,
-`CERT-DOMAIN`, `CORS`, `LNA-DENIED`, `DOWN`, `SLOW`, `CONSOLE`) each with
-its fix. Screenshots land in `docs/screenshots/`.
+(slow motion, watch on `:0`): three render steps, then a both-devices API
+matrix (loopback + mesh IPs, both nodes). Reports per-step timings,
+console errors, pageerrors, plus probes classified into blockers
+(`CERT-AUTHORITY`, `CERT-DOMAIN`, `CORS`, `LNA-DENIED`, `DOWN`, `SLOW`,
+`CONSOLE`) each with its fix; bottlenecks print slowest-first.
+Screenshots land in `docs/screenshots/`.
+
+Proven LNA nuance (queried live): same browser reports `prompt` on
+localhost origins but `denied` on public Pages — the permission model
+keys off requester address space, so localhost-served copies need no
+grant while public Pages always does. The UI branches on the queried
+state instead of assuming.
 
 ```bash
 python3 tests/interactive-eval.py --shots docs/screenshots --slow 400

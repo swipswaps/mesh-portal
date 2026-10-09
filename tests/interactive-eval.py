@@ -34,6 +34,18 @@ STEPS = [
      "shot": "eval-03-portal-local.png"},
 ]
 
+# Both-devices API matrix: every backend on every node, from the one
+# browser. DOWN here is data, not noise — e.g. .45:5409 DOWN surfaces
+# the outstanding lighthouse adoption item.
+DEVICES = [
+    ("ws24-mesh-api", "https://10.100.0.24:5409/api/rev"),
+    ("ws24-loopback-api", "http://127.0.0.1:5409/api/rev"),
+    ("ws24-dashboard-mesh", "https://10.100.0.24:5099/api/rev"),
+    ("ws24-dashboard-loop", "https://127.0.0.1:5099/api/rev"),
+    ("lh-mesh-api", "http://10.100.0.1:5409/api/rev"),
+    ("lh-dashboard-mesh", "https://10.100.0.1:5099/api/rev"),
+]
+
 
 def classify(err_text, lna_state):
     t = (err_text or "").lower()
@@ -135,7 +147,7 @@ def main():
                   const out = {};
                   for (const [k, u] of Object.entries(urls)) {
                     try {
-                      const r = await fetch(u, {signal: AbortSignal.timeout(8000)});
+                      const r = await fetch(u, {signal: AbortSignal.timeout(12000)});
                       out[k] = 'OK ' + r.status;
                     } catch (e) { out[k] = 'ERR ' + String(e).slice(0, 80); }
                   }
@@ -150,17 +162,66 @@ def main():
                         {"step": st["name"] + ":" + k, "blocker": b_,
                          "fix": f_, "detail": v})
             report["steps"].append(rec)
-        b.close()
 
-    print(json.dumps(report, indent=1)[:4000])
-    slow_rank = sorted(report["steps"],
-                       key=lambda r: r.get("settle_ms", 0), reverse=True)
-    print("--- slowest first ---")
-    for r in slow_rank:
-        print("%s load=%sms settle=%sms blocker=%s" % (
-            r["step"], r.get("load_ms"), r.get("settle_ms"),
-            r.get("blocker")))
-    print("--- blockers: %d ---" % len(report["blockers"]))
+        # Both-devices matrix on a FRESH page (local preview origin:
+        # loopback + mesh IPs without LNA friction). Fresh page isolates
+        # connection state accumulated across the stepped navigations,
+        # which flaked loopback fetches under load.
+        pg2 = ctx.new_page()
+        pg2.goto("http://127.0.0.1:4173/", wait_until="domcontentloaded",
+                 timeout=20000)
+        pg = pg2
+        pg.wait_for_timeout(2000)
+        matrix = pg.evaluate(
+            """(async () => {
+              const devs = DEVICES_PLACEHOLDER;
+              const out = {};
+          for (const [name, u] of devs) {
+            // Stagger: the portal app probes on its own 10s cycle; spacing
+            // matrix fetches avoids burst collision on the single box.
+            // One retry: separates transient (tether/CPU) from real, and
+            // the report records which needed it.
+            await new Promise((r) => setTimeout(r, 1500));
+            let last = '';
+            for (let attempt = 0; attempt < 2; attempt++) {
+              try {
+                const r = await fetch(u, {signal: AbortSignal.timeout(12000)});
+                out[name] = 'OK ' + r.status + ' ' +
+                  (await r.text()).slice(0, 90) +
+                  (attempt ? ' (retry)' : '');
+                last = '';
+                break;
+              } catch (e) {
+                last = 'ERR ' + String(e).slice(0, 90);
+                await new Promise((r) => setTimeout(r, 2000));
+              }
+            }
+            if (last) out[name] = last;
+          }
+          return out;
+            })()""".replace("DEVICES_PLACEHOLDER", json.dumps(DEVICES)))
+        report["matrix"] = matrix
+        for name, res in matrix.items():
+            print("MATRIX %s -> %s" % (name, res))
+            if res.startswith("ERR"):
+                b_, f_ = classify(res, "")
+                # .45 endpoints DOWN is the known outstanding item, not new.
+                known = "lighthouse adoption (mesh-api not deployed there yet)"
+                report["blockers"].append(
+                    {"step": "matrix:" + name, "blocker": b_,
+                     "fix": f_ if not name.startswith("lh-") else known,
+                     "detail": res})
+
+        print(json.dumps(report, indent=1)[:4000])
+        slow_rank = sorted(report["steps"],
+                           key=lambda r: r.get("settle_ms", 0), reverse=True)
+        print("--- slowest first ---")
+        for r in slow_rank:
+            print("%s load=%sms settle=%sms blocker=%s" % (
+                r["step"], r.get("load_ms"), r.get("settle_ms"),
+                r.get("blocker")))
+        print("--- blockers: %d ---" % len(report["blockers"]))
+    b.close()
     return 0 if not report["blockers"] else 1
 
 
