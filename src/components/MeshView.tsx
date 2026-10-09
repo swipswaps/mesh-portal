@@ -31,6 +31,7 @@ export function MeshView(props: { online: boolean }) {
   if (!props.online) return <p className="muted">Mesh view needs the mesh API.</p>;
   if (!state) return <p className="muted">Loading mesh state…</p>;
   if (!state.available) return <p className="muted">No inventory on this node.</p>;
+  // Findings render once, in Telemetry — not duplicated here.
   return (
     <div>
       <h2>Nodes ({state.nodes.length})</h2>
@@ -38,14 +39,6 @@ export function MeshView(props: { online: boolean }) {
         {state.nodes.map((n) => (
           <li key={n.name}>
             <code>{n.name}</code> {n.mesh_ip} <span className="muted">{n.machine_id}</span>
-          </li>
-        ))}
-      </ul>
-      <h2>Open findings ({state.findings.length})</h2>
-      <ul>
-        {state.findings.map((f) => (
-          <li key={f.id}>
-            <strong>{f.kind}</strong> — {f.detail}
           </li>
         ))}
       </ul>

@@ -4,6 +4,8 @@ import { queryLna, type LnaState } from './services/lna';
 import { HealthProbe, type HealthStatus } from './services/health';
 import { StatusBanner } from './components/StatusBanner';
 import { MeshView } from './components/MeshView';
+import { Telemetry } from './components/Telemetry';
+import { Guide } from './components/Guide';
 import './App.css';
 
 const fresh = (): HealthStatus => ({
@@ -16,6 +18,11 @@ export default function App() {
   const [mesh, setMesh] = useState<HealthStatus>(fresh);
   const [opencode, setOpencode] = useState<HealthStatus>(fresh);
   const [lna, setLna] = useState<LnaState>('unknown');
+  const [counts, setCounts] = useState<{ nodes: number; findings: number; sessions: number | null }>({
+    nodes: 0,
+    findings: 0,
+    sessions: null,
+  });
   const probes = useRef<{ mesh: HealthProbe; opencode: HealthProbe } | null>(null);
 
   useEffect(() => {
@@ -42,6 +49,18 @@ export default function App() {
       <StatusBanner mesh={mesh} opencode={opencode} lna={lna} />
       <main>
         <MeshView online={mesh.isAvailable} />
+        <Telemetry
+          meshOnline={mesh.isAvailable}
+          dashboardOnline={opencode.isAvailable}
+          onCounts={setCounts}
+        />
+        <Guide
+          meshOnline={mesh.isAvailable}
+          dashboardOnline={opencode.isAvailable}
+          meshNodes={counts.nodes}
+          openFindings={counts.findings}
+          sessions={counts.sessions}
+        />
       </main>
     </div>
   );

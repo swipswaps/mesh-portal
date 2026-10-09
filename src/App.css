@@ -45,3 +45,43 @@ li {
   margin: 4px 0;
   font-size: 14px;
 }
+ol.muted li {
+  margin: 3px 0;
+}
+.card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 10px 0;
+}
+.card h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+}
+.cmd {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin: 0 0 6px;
+}
+.cmd code {
+  flex: 1;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 12px;
+}
+button {
+  background: #1f6feb;
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}

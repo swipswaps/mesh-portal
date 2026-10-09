@@ -106,6 +106,10 @@ npm run preview  # serve dist on :4173
 npm test         # playwright vs preview (backend-absent assertions)
 ```
 
+Debug: `?api-mesh=<origin>&api-dash=<origin>` overrides backend origins
+(the offline test pins unroutable ones for determinism — headless shell
+ignores cert errors, so live backends would flip its dots green).
+
 Deploy: push to `main` → Actions `deploy.yml` (pinned `ubuntu-24.04`) →
 Pages. Screenshots here are regenerated the same way (`docs/`
 procedure: Playwright `channel='chrome'`, desktop + 390px).
