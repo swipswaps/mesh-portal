@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MESH_API_BASE, OPENCODE_BASE } from './config';
+import { MESH_API_BASE, OPENCODE_BASE, isGitHubPages } from './config';
 import { HealthProbe, type HealthStatus } from './services/health';
 import { StatusBanner } from './components/StatusBanner';
 import { MeshView } from './components/MeshView';
@@ -19,6 +19,10 @@ export default function App() {
   useEffect(() => {
     const m = new HealthProbe(`${MESH_API_BASE}/api/rev`);
     const o = new HealthProbe(`${OPENCODE_BASE}/api/rev`);
+    if (isGitHubPages) {
+      m.staticHosting();
+      o.staticHosting();
+    }
     probes.current = { mesh: m, opencode: o };
     m.start(setMesh);
     o.start(setOpencode);

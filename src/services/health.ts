@@ -30,17 +30,38 @@ export class HealthProbe {
   private paused = false;
   private failures = 0;
   private lastAttempt = 0;
+  private neverHealthy = true;
+  private latchedDead = false;
+  private staticContext = false;
 
   constructor(private readonly revUrl: string) {}
+
+  /** Pages-style static hosting: latch dead after the first failed round. */
+  staticHosting(): this {
+    this.staticContext = true;
+    return this;
+  }
 
   start(onChange?: (s: HealthStatus) => void): void {
     void this.check().then(onChange);
     if (this.timer) return;
     this.timer = setInterval(() => {
       if (this.paused) return;
-      void this.check().then(onChange);
+      // Dead stop on public static hosting with no backend ever seen:
+      // re-polling a void only spams the console (the receipts-ocr
+      // failure mode this file was written to avoid).
+      if (this.latchedDead) {
+        this.stop();
+        return;
+      }
+      void this.check().then((s) => {
+        if (!s.isAvailable && s.consecutiveFailures >= 1 && this.neverHealthy && this.staticContext) {
+          this.latchedDead = true;
+          this.stop();
+        }
+        onChange?.(s);
+      });
     }, FAST_MS);
-    // Quiet backoff is applied inside check() by skipping.
   }
 
   stop(): void {
@@ -79,6 +100,7 @@ export class HealthProbe {
       clearTimeout(t);
       if (r.ok) {
         this.failures = 0;
+        this.neverHealthy = false;
         this.status = { isAvailable: true, lastChecked: new Date(), consecutiveFailures: 0 };
         return this.getStatus();
       }
