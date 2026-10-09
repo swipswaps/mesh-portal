@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { MESH_API_BASE, OPENCODE_BASE, isGitHubPages } from './config';
+import { queryLna, type LnaState } from './services/lna';
 import { HealthProbe, type HealthStatus } from './services/health';
 import { StatusBanner } from './components/StatusBanner';
 import { MeshView } from './components/MeshView';
@@ -14,6 +15,7 @@ const fresh = (): HealthStatus => ({
 export default function App() {
   const [mesh, setMesh] = useState<HealthStatus>(fresh);
   const [opencode, setOpencode] = useState<HealthStatus>(fresh);
+  const [lna, setLna] = useState<LnaState>('unknown');
   const probes = useRef<{ mesh: HealthProbe; opencode: HealthProbe } | null>(null);
 
   useEffect(() => {
@@ -26,6 +28,7 @@ export default function App() {
     probes.current = { mesh: m, opencode: o };
     m.start(setMesh);
     o.start(setOpencode);
+    void queryLna().then(setLna);
     return () => {
       m.stop();
       o.stop();
@@ -36,7 +39,7 @@ export default function App() {
   return (
     <div className="app">
       <h1>mesh-portal</h1>
-      <StatusBanner mesh={mesh} opencode={opencode} />
+      <StatusBanner mesh={mesh} opencode={opencode} lna={lna} />
       <main>
         <MeshView online={mesh.isAvailable} />
       </main>
