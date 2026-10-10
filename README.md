@@ -50,6 +50,13 @@ the monitor loop keeps writing while roams repeat:
 
 ![live roam accumulation](docs/screenshots/10-roam-live.png)
 
+Scripted switch cycle via `mesh-wifi-switch.sh` (belkin2 → hotspot →
+belkin2, receipts each leg, rollback on failure): hotspot history keeps
+accumulating across runs, belkin2 holds its loss-event record:
+
+![on hotspot, scripted switch](docs/screenshots/12-switch-hotspot.png)
+![back home, scripted switch](docs/screenshots/13-switch-belkin2.png)
+
 ## Islanded-node wifi recovery
 
 `mesh-wifi-switch.sh` (mesh repo `scripts/`) switches a node to a target
