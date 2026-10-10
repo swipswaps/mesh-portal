@@ -44,6 +44,12 @@ check at 70.3ms — the phone-hotspot roam this portal was built to prove:
 
 ![real roam history](docs/screenshots/09-real-history.png)
 
+Second live roam (fresh run, same networks): hotspot accumulates to 3
+checks with its own partial-loss event (amber dot), belkin2 to 20 —
+the monitor loop keeps writing while roams repeat:
+
+![live roam accumulation](docs/screenshots/10-roam-live.png)
+
 ## Islanded-node wifi recovery
 
 `mesh-wifi-switch.sh` (mesh repo `scripts/`) switches a node to a target
