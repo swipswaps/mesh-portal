@@ -38,6 +38,12 @@ failures alike):
 
 ![heal actions](docs/screenshots/07-actions.png)
 
+Live roam evidence (real DB, not fixtures): `belkin2` 18 checks with
+captured loss events (red dots), `Samsung Galaxy A6 1394` single roam
+check at 70.3ms — the phone-hotspot roam this portal was built to prove:
+
+![real roam history](docs/screenshots/09-real-history.png)
+
 ## Islanded-node wifi recovery
 
 `mesh-wifi-switch.sh` (mesh repo `scripts/`) switches a node to a target
