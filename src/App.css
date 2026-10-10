@@ -85,3 +85,21 @@ button {
   cursor: pointer;
   white-space: nowrap;
 }
+table {
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 6px 0 12px;
+}
+th,
+td {
+  border: 1px solid #21262d;
+  padding: 3px 8px;
+  text-align: left;
+}
+th {
+  color: #8b949e;
+  font-weight: 600;
+}
+details summary {
+  cursor: pointer;
+}

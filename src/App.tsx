@@ -8,6 +8,7 @@ import { Telemetry } from './components/Telemetry';
 import { Guide } from './components/Guide';
 import { History } from './components/History';
 import type { MeshSnapshot } from './services/store';
+import { loadCached, saveCached } from './services/store';
 import './App.css';
 
 const fresh = (): HealthStatus => ({
@@ -20,7 +21,18 @@ export default function App() {
   const [mesh, setMesh] = useState<HealthStatus>(fresh);
   const [opencode, setOpencode] = useState<HealthStatus>(fresh);
   const [lna, setLna] = useState<LnaState>('unknown');
-  const [snapshot, setSnapshot] = useState<MeshSnapshot | null>(null);
+  // Last-good snapshot persists across backend outages (localStorage):
+  // cached data renders with a stale badge instead of going blank.
+  const [snapshot, setSnapshot] = useState<MeshSnapshot | null>(() => loadCached());
+  const remember = (m: MeshSnapshot | null) => {
+    setSnapshot((prev) => {
+      if (m && m.available) {
+        saveCached(m);
+        return m;
+      }
+      return prev;
+    });
+  };
   const [counts, setCounts] = useState<{ nodes: number; findings: number; sessions: number | null }>({
     nodes: 0,
     findings: 0,
@@ -56,12 +68,13 @@ export default function App() {
           meshOnline={mesh.isAvailable}
           dashboardOnline={opencode.isAvailable}
           onCounts={setCounts}
-          onSnapshot={setSnapshot}
+          onSnapshot={remember}
         />
         <History
           latency={snapshot?.latency ?? []}
           availability={snapshot?.availability ?? {}}
           actions={snapshot?.actions ?? []}
+          stale={!mesh.isAvailable && (snapshot?.latency?.length ?? 0) > 0}
         />
         <Guide
           meshOnline={mesh.isAvailable}

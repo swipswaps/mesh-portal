@@ -67,6 +67,28 @@ export interface SessionCounts {
   total: number;
 }
 
+const SNAP_KEY = 'mesh-portal:last-good-snapshot';
+
+export function loadCached(): MeshSnapshot | null {
+  try {
+    const raw = localStorage.getItem(SNAP_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    if (!d || !Array.isArray(d.latency)) return null;
+    return d as MeshSnapshot;
+  } catch {
+    return null;
+  }
+}
+
+export function saveCached(s: MeshSnapshot): void {
+  try {
+    localStorage.setItem(SNAP_KEY, JSON.stringify({ ...s, cachedAt: new Date().toISOString() }));
+  } catch {
+    /* storage full/blocked: live data still renders */
+  }
+}
+
 export async function readSessions(base: string): Promise<SessionCounts> {
   // limit=500: /api/sessions paginates, and this number is displayed as a
   // total — limit=1 once lied "sessions 1" here.

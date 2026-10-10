@@ -36,8 +36,9 @@ export function History(props: {
   latency: LatencyRow[];
   availability: Record<string, { checks: number; up_pct: number | null; avg_ms: number | null }>;
   actions: HealAction[];
+  stale: boolean;
 }) {
-  const { latency, availability, actions } = props;
+  const { latency, availability, actions, stale } = props;
   if (latency.length === 0 && Object.keys(availability).length === 0) {
     return <p className="muted">No latency history yet — roam tests and monitors record here.</p>;
   }
@@ -50,7 +51,10 @@ export function History(props: {
   for (const arr of byNet.values()) arr.reverse();
   return (
     <div>
-      <h2>Availability history</h2>
+      <h2>
+        Availability history{' '}
+        {stale && <span className="muted">(cached — backend unreachable)</span>}
+      </h2>
       <ul>
         {Object.entries(availability).map(([net, a]) => (
           <li key={net}>
@@ -73,29 +77,74 @@ export function History(props: {
           </ul>
         </div>
       )}
-      {Array.from(byNet.entries()).map(([net, rows]) => (
-        <div key={net}>
-          <h3>
-            {net} <span className="muted">({rows.length} checks, ms)</span>
-          </h3>
-          <svg
-            viewBox={`0 0 ${W} ${H}`}
-            width="100%"
-            role="img"
-            aria-label={`latency history for ${net}`}
-          >
-            <polyline points={points(rows)} fill="none" stroke="#58a6ff" strokeWidth="2" />
-            {rows.map((r, i) => {
-              const [x, y] = points(rows).split(' ')[i].split(',').map(Number);
-              return (
-                <circle key={i} cx={x} cy={y} r="3.5" fill={dotColor(r)}>
-                  <title>{`${r.ts} ${r.recv}/${r.sent} avg ${r.avg_ms ?? '?'}ms → ${r.target}`}</title>
-                </circle>
-              );
-            })}
-          </svg>
-        </div>
-      ))}
+      {Array.from(byNet.entries()).map(([net, rows]) => {
+        const vals = rows.map((r) => r.avg_ms ?? 0);
+        const max = Math.max(1, ...vals);
+        const min = Math.min(...vals);
+        const pts = points(rows).split(' ');
+        return (
+          <div key={net}>
+            <h3>
+              {net} <span className="muted">({rows.length} checks, ms)</span>
+            </h3>
+            <svg
+              viewBox={`0 0 ${W} ${H + 28}`}
+              width="100%"
+              role="img"
+              aria-label={`latency history for ${net}`}
+            >
+              <text x={PAD} y={PAD + 4} fill="#8b949e" fontSize="9">
+                max {max.toFixed(1)}ms
+              </text>
+              <text x={PAD} y={H - PAD} fill="#8b949e" fontSize="9">
+                min {min.toFixed(1)}ms
+              </text>
+              <polyline points={points(rows)} fill="none" stroke="#58a6ff" strokeWidth="2" />
+              {rows.map((r, i) => {
+                const [x, y] = pts[i].split(',').map(Number);
+                return (
+                  <circle key={i} cx={x} cy={y} r="3.5" fill={dotColor(r)}>
+                    <title>{`${r.ts} ${r.recv}/${r.sent} avg ${r.avg_ms ?? '?'}ms → ${r.target}`}</title>
+                  </circle>
+                );
+              })}
+              <text x={PAD} y={H + 16} fill="#8b949e" fontSize="9">
+                {(rows[0]?.ts ?? '').slice(5, 16).replace('T', ' ')}
+              </text>
+              <text x={W - PAD} y={H + 16} fill="#8b949e" fontSize="9" textAnchor="end">
+                {(rows[rows.length - 1]?.ts ?? '').slice(5, 16).replace('T', ' ')}
+              </text>
+            </svg>
+            <details>
+              <summary className="muted">
+                data ({rows.length} rows)
+              </summary>
+              <table>
+                <thead>
+                  <tr>
+                    <th>time</th>
+                    <th>target</th>
+                    <th>recv/sent</th>
+                    <th>avg ms</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.ts.slice(5, 19).replace('T', ' ')}</td>
+                      <td>{r.target}</td>
+                      <td>
+                        {r.recv}/{r.sent}
+                      </td>
+                      <td>{r.avg_ms ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </details>
+          </div>
+        );
+      })}
     </div>
   );
 }
